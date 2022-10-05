@@ -1,0 +1,1 @@
+# twoslash-queries.nvim
