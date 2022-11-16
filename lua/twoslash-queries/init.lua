@@ -64,6 +64,10 @@ M.enable = function()
 	get_types()
 end
 
+M.setup = function(config)
+	isEnabled = config.isEnabled or false
+end
+
 local activate_types_augroup = vim.api.nvim_create_augroup("activateTypes", { clear = true })
 vim.api.nvim_create_autocmd({ "BufEnter", "BufWinEnter", "TabEnter", "InsertLeave", "TextChanged" }, {
 	pattern = "*",
