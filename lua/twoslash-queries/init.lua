@@ -15,7 +15,8 @@ local add_virtual_text = function(line, text)
 end
 
 local format_virtal_text = function(text)
-	local escaped = string.gsub(text, "\n   ", "")
+	local converted = vim.lsp.util.convert_input_to_markdown_lines(text)
+	local escaped = string.gsub(converted[3], "\n   ", "")
 	return string.sub(escaped, 1, 120)
 end
 
@@ -27,11 +28,11 @@ local get_hover_text = function(line, column)
 			for _, client_response in pairs(data) do
 				if
 					client_response
+					and client_response.result
 					and client_response.result.contents
-					and client_response.result.contents[1]
-					and client_response.result.contents[1].value
+					and client_response.result.contents.value
 				then
-					add_virtual_text(line, format_virtal_text(client_response.result.contents[1].value))
+					add_virtual_text(line, format_virtal_text(client_response.result.contents.value))
 				end
 			end
 		end
