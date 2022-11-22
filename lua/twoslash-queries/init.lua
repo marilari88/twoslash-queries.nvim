@@ -64,7 +64,6 @@ local activate_types_augroup = vim.api.nvim_create_augroup("activateTypes", { cl
 M.attach = function(client, buffer_nr)
 	isEnabled = true
 	get_types(client, buffer_nr or 0)
-	print("mi attacco al buffer" .. buffer_nr)
 
 	vim.api.nvim_create_autocmd({ "BufEnter", "BufWinEnter", "TabEnter", "InsertLeave", "TextChanged" }, {
 		pattern = "*",
