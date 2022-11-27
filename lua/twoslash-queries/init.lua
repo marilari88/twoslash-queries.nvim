@@ -1,6 +1,6 @@
 M = {}
 
-local isEnabled = false
+M.Is_enabled = true
 
 local virtual_types_ns = vim.api.nvim_create_namespace("virtual_types")
 local get_buffer_number = function()
@@ -37,8 +37,13 @@ end
 
 local get_types = function(client, buffer_nr)
 	vim.api.nvim_buf_clear_namespace(buffer_nr, virtual_types_ns, 0, -1)
+
+	if M.Is_enabled == false then
+		return
+	end
+
 	local lines = vim.api.nvim_buf_get_lines(buffer_nr, 0, -1, false)
-	local regex = vim.regex([[^\s*\/\/\s*\^\?]])
+	local regex = vim.regex([[^\s*/\/\s*\^?]])
 
 	for index, line in pairs(lines) do
 		local match = regex:match_str(line)
@@ -51,27 +56,39 @@ local get_types = function(client, buffer_nr)
 end
 
 M.disable = function()
-	isEnabled = false
+	M.Is_enabled = false
 	vim.api.nvim_buf_clear_namespace(get_buffer_number(), virtual_types_ns, 0, -1)
 end
 
 M.enable = function()
-	isEnabled = true
+	M.Is_enabled = true
+	vim.cmd([[doautocmd User EnableTwoslashQueries]])
 end
 
 local activate_types_augroup = vim.api.nvim_create_augroup("activateTypes", { clear = true })
 
 M.attach = function(client, buffer_nr)
-	isEnabled = true
 	get_types(client, buffer_nr or 0)
 
-	vim.api.nvim_create_autocmd({ "BufEnter", "BufWinEnter", "TabEnter", "InsertLeave", "TextChanged" }, {
-		pattern = "*",
+	vim.api.nvim_create_autocmd({
+		"BufWinEnter",
+		"TabEnter",
+		"InsertLeave",
+		"TextChanged",
+	}, {
+		buffer = buffer_nr,
+		group = activate_types_augroup,
+		callback = function(args)
+			if client and client.server_capabilities.hoverProvider then
+				get_types(client, buffer_nr or 0)
+			end
+		end,
+	})
+
+	vim.api.nvim_create_autocmd("User", {
+		pattern = "EnableTwoslashQueries",
 		group = activate_types_augroup,
 		callback = function()
-			if isEnabled == false then
-				return
-			end
 			if client and client.server_capabilities.hoverProvider then
 				get_types(client, buffer_nr or 0)
 			end
