@@ -17,6 +17,7 @@ use("marilari88/twoslash-queries")
 ```
 
 Make sure you have typescript language server properly installed and configured (personally I use Mason and Lspconfig plugins)
+
 Then attach it on your tsserver in lspconfig setup
 ```lua
 require("lspconfig")["tsserver"].setup({
