@@ -13,7 +13,7 @@ This is particularly useful when you are playing with complex typescript types:
 
 ### Packer
 ```lua
-use("marilari88/twoslash-queries")
+use("marilari88/twoslash-queries.nvim")
 ```
 
 Make sure you have typescript language server properly installed and configured (personally I use Mason and Lspconfig plugins)
