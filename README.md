@@ -1,4 +1,6 @@
 # twoslash-queries.nvim
+Written in lua for nvim
+
 Inspired by [vscode-twoslash-queries](https://github.com/orta/vscode-twoslash-queries), this plugin allows you to print typescript types to inline virtual text and dynamically update it instantly without having to move the cursor over the inspected variable
 
 This is particularly useful when you are playing with complex typescript types:
