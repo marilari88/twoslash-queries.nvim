@@ -1,7 +1,7 @@
 # twoslash-queries.nvim
 Written in lua for nvim
 
-Inspired by [vscode-twoslash-queries](https://github.com/orta/vscode-twoslash-queries), this plugin allows you to print typescript types to inline virtual text and dynamically update it instantly without having to move the cursor over the inspected variable
+Inspired by [vscode-twoslash-queries](https://github.com/orta/vscode-twoslash-queries), this plugin allows you to print typescript types as inline virtual text and dynamically update it instantly without having to move the cursor over the inspected variable
 
 This is particularly useful when you are playing with complex typescript types:
 
@@ -26,9 +26,13 @@ require("lspconfig")["tsserver"].setup({
 	on_attach = function(client, bufnr)
 		require("twoslash-queries").attach(client, bufnr)
 	end,
-  ...
 })
+```
 
+
+Optionally you can define a custom keymap for InspectTwoslashQueries command
+```lua
+vim.api.nvim_set_keymap('n',"<C-i>","<cmd>InspectTwoslashQueries<CR>",{})
 ```
 
 ## Usage
@@ -42,6 +46,10 @@ const variableToInspect = ....
 `:EnableTwoslashQueries` Enable the plugin for the current session
 
 `:DisableTwoslashQueries` Disable the plugin for the current session
+
+`:InspectTwoslashQueries` Inspect variable under the cursor
+
+![Add Inspect](https://user-images.githubusercontent.com/32909388/204394442-48153bd9-caba-49d5-9b82-7f2b2a52f014.gif)
 
 ## :gift: Contributing
 
