@@ -23,5 +23,8 @@ vim.api.nvim_create_user_command("InspectTwoslashQueries", function()
 
   -- write string line
   vim.api.nvim_buf_set_lines(0,r,r,false,{two_slash_string})
-
 end, { nargs = 0, desc = "Inspect variable under the cursor" })
+
+vim.api.nvim_create_user_command("RemoveTwoslashQueries", function()
+	require("twoslash-queries").remove_queries()
+end, { nargs = 0, desc = "Remove all two slash queries in the current buffer" })

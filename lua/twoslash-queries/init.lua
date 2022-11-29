@@ -2,6 +2,8 @@ M = {}
 
 M.Is_enabled = true
 
+local query_regex = [[^\s*/\/\s*\^?]]
+
 local virtual_types_ns = vim.api.nvim_create_namespace("virtual_types")
 local get_buffer_number = function()
 	return vim.api.nvim_get_current_buf()
@@ -35,6 +37,24 @@ local get_hover_text = function(client, buffer_nr, line, column)
 	end
 end
 
+M.remove_queries = function()
+	vim.api.nvim_buf_clear_namespace(0, virtual_types_ns, 0, -1)
+
+	local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+	local regex = vim.regex(query_regex)
+
+  local removed_lines = 0
+
+	for index, line in pairs(lines) do
+		local match = regex:match_str(line)
+
+		if match then
+      vim.api.nvim_buf_set_lines(0,index-1 - removed_lines,index-removed_lines,true,{})
+      removed_lines=removed_lines + 1
+		end
+	end
+end
+
 local get_types = function(client, buffer_nr)
 	vim.api.nvim_buf_clear_namespace(buffer_nr, virtual_types_ns, 0, -1)
 
@@ -43,7 +63,7 @@ local get_types = function(client, buffer_nr)
 	end
 
 	local lines = vim.api.nvim_buf_get_lines(buffer_nr, 0, -1, false)
-	local regex = vim.regex([[^\s*/\/\s*\^?]])
+	local regex = vim.regex(query_regex)
 
 	for index, line in pairs(lines) do
 		local match = regex:match_str(line)
@@ -78,7 +98,7 @@ M.attach = function(client, buffer_nr)
 	}, {
 		buffer = buffer_nr,
 		group = activate_types_augroup,
-		callback = function(args)
+		callback = function()
 			if client and client.server_capabilities.hoverProvider then
 				get_types(client, buffer_nr or 0)
 			end
