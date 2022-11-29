@@ -49,6 +49,8 @@ const variableToInspect = ....
 
 `:InspectTwoslashQueries` Inspect variable under the cursor
 
+`:RemoveTwoslashQueries` Remove all twoslash queries in the current buffer
+
 ![Add Inspect](https://user-images.githubusercontent.com/32909388/204394442-48153bd9-caba-49d5-9b82-7f2b2a52f014.gif)
 
 ## :gift: Contributing
