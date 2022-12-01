@@ -32,7 +32,7 @@ require("lspconfig")["tsserver"].setup({
 
 Optionally you can define a custom keymap for InspectTwoslashQueries command
 ```lua
-vim.api.nvim_set_keymap('n',"<C-i>","<cmd>InspectTwoslashQueries<CR>",{})
+vim.api.nvim_set_keymap('n',"<C-k>","<cmd>InspectTwoslashQueries<CR>",{})
 ```
 
 ## Usage
