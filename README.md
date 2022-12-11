@@ -29,11 +29,26 @@ require("lspconfig")["tsserver"].setup({
 })
 ```
 
-
 Optionally you can define a custom keymap for InspectTwoslashQueries command
 ```lua
 vim.api.nvim_set_keymap('n',"<C-k>","<cmd>InspectTwoslashQueries<CR>",{})
 ```
+## Config
+You can override default config use setup function:
+```lua
+use({
+    "marilari88/twoslash-queries.nvim",			
+		config = function()
+			require("twoslash-queries").setup({
+				multi_line = true, -- to print types in multi line mode
+				is_enabled = false, -- to keep disabled at startup and enable it on request with the EnableTwoslashQueries command
+			})
+		end,
+})
+```
+Default config:
+ - multi_line = false
+ - is_enabled = true
 
 ## Usage
 Write a `//    ^?` placing the sign `^` under the variable to inspected:

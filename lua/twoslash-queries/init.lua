@@ -1,13 +1,12 @@
 M = {}
 
-M.Is_enabled = true
-
-M.multi_line = false
+M.config = {
+	is_enabled = true,
+	multi_line = false,
+}
 
 M.setup = function(args)
-	if args.multi_line then
-		M.multi_line = args.multi_line
-	end
+	M.config = vim.tbl_deep_extend("force", M.config, args)
 end
 
 local query_regex = [[^\s*/\/\s*\^?]]
@@ -31,7 +30,7 @@ local add_virtual_text = function(buffer_nr, position, lines)
 	local virt_text = {}
 	local virt_lines = {}
 
-	if M.multi_line == true then
+	if M.config.multi_line == true then
 		virt_text = { { lines[1], "TypeVirtualText" } }
 		for i = 2, #lines do
 			virt_lines[i - 1] = { { get_whitespaces_string(position.character + 2) .. lines[i], "TypeVirtualText" } }
@@ -48,7 +47,7 @@ end
 
 local format_virtual_text = function(text)
 	local converted = vim.lsp.util.convert_input_to_markdown_lines(text, {})
-	if M.multi_line == true then
+	if M.config.multi_line == true then
 		local selected_lines = vim.list_slice(converted, 3, #converted - 2)
 		return selected_lines
 	end
@@ -93,7 +92,7 @@ end
 local get_types = function(client, buffer_nr)
 	vim.api.nvim_buf_clear_namespace(buffer_nr, virtual_types_ns, 0, -1)
 
-	if M.Is_enabled == false then
+	if M.config.is_enabled == false then
 		return
 	end
 
@@ -111,12 +110,12 @@ local get_types = function(client, buffer_nr)
 end
 
 M.disable = function()
-	M.Is_enabled = false
+	M.config.is_enabled = false
 	vim.api.nvim_buf_clear_namespace(get_buffer_number(), virtual_types_ns, 0, -1)
 end
 
 M.enable = function()
-	M.Is_enabled = true
+	M.config.is_enabled = true
 	vim.cmd([[doautocmd User EnableTwoslashQueries]])
 end
 
