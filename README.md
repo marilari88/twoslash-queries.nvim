@@ -23,9 +23,9 @@ Make sure you have typescript language server properly installed and configured 
 Then attach it on your tsserver in lspconfig setup
 ```lua
 require("lspconfig")["tsserver"].setup({
-	on_attach = function(client, bufnr)
-		require("twoslash-queries").attach(client, bufnr)
-	end,
+    on_attach = function(client, bufnr)
+       require("twoslash-queries").attach(client, bufnr)
+    end,
 })
 ```
 
@@ -37,13 +37,13 @@ vim.api.nvim_set_keymap('n',"<C-k>","<cmd>InspectTwoslashQueries<CR>",{})
 You can override default config use setup function:
 ```lua
 use({
-    "marilari88/twoslash-queries.nvim",			
-		config = function()
-			require("twoslash-queries").setup({
-				multi_line = true, -- to print types in multi line mode
-				is_enabled = false, -- to keep disabled at startup and enable it on request with the EnableTwoslashQueries command
-			})
-		end,
+   "marilari88/twoslash-queries.nvim",			
+    config = function()
+        require("twoslash-queries").setup({
+            multi_line = true, -- to print types in multi line mode
+            is_enabled = false, -- to keep disabled at startup and enable it on request with the EnableTwoslashQueries 
+	   })
+    end,
 })
 ```
 Default config:
