@@ -3,6 +3,7 @@ M = {}
 M.config = {
 	is_enabled = true,
 	multi_line = false,
+	highlight = "TypeVirtualText",
 }
 
 M.setup = function(args)
@@ -31,12 +32,12 @@ local add_virtual_text = function(buffer_nr, position, lines)
 	local virt_lines = {}
 
 	if M.config.multi_line == true then
-		virt_text = { { lines[1], "TypeVirtualText" } }
+		virt_text = { { lines[1], M.config.highlight } }
 		for i = 2, #lines do
-			virt_lines[i - 1] = { { get_whitespaces_string(position.character + 2) .. lines[i], "TypeVirtualText" } }
+			virt_lines[i - 1] = { { get_whitespaces_string(position.character + 2) .. lines[i], M.config.highlight } }
 		end
 	else
-		virt_text = { { lines, "TypeVirtualText" } }
+		virt_text = { { lines, M.config.highlight } }
 	end
 
 	vim.api.nvim_buf_set_extmark(buffer_nr, virtual_types_ns, position.line + 1, 0, {
