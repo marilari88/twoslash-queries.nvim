@@ -46,13 +46,30 @@ local add_virtual_text = function(buffer_nr, position, lines)
 	})
 end
 
+local get_response_limit_indexes = function(lines)
+	local start = nil
+	local result_limit = vim.regex([[```]])
+	for index, line in pairs(lines) do
+		local match = result_limit:match_str(line)
+
+		if start ~= nil and match then
+			return { start + 1, index - 1 }
+		end
+		if match then
+			start = index
+		end
+	end
+	return { 1, #lines }
+end
+
 local format_virtual_text = function(text)
 	local converted = vim.lsp.util.convert_input_to_markdown_lines(text, {})
+	local limits = get_response_limit_indexes(converted)
 	if M.config.multi_line == true then
-		local selected_lines = vim.list_slice(converted, 3, #converted - 2)
+		local selected_lines = vim.list_slice(converted, limits[1], limits[2])
 		return selected_lines
 	end
-	local joined_string = table.concat(converted, "", 3, #converted - 2)
+	local joined_string = table.concat(converted, "", limits[1], limits[2])
 	local escaped = string.gsub(joined_string, "  ", " ")
 	return string.sub(escaped, 1, 120)
 end
@@ -65,8 +82,9 @@ local get_hover_text = function(client, buffer_nr, line, column)
 	local params = { textDocument = vim.lsp.util.make_text_document_params(buffer_nr), position = position }
 	if client then
 		client.request("textDocument/hover", params, function(_, result)
-			if result and result.contents and result.contents.value then
-				add_virtual_text(buffer_nr, position, format_virtual_text(result.contents.value))
+			if result and result.contents then
+				local formatted_text = format_virtual_text(result.contents.value or result.contents)
+				add_virtual_text(buffer_nr, position, formatted_text)
 			end
 		end)
 	end
