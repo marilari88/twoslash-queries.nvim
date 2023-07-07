@@ -3,25 +3,25 @@ M = {}
 M.config = {
 	is_enabled = true,
 	multi_line = false,
-	highlight = 'TypeVirtualText',
+	highlight = "TypeVirtualText",
 }
 
 M.setup = function(args)
-	M.config = vim.tbl_deep_extend('force', M.config, args)
+	M.config = vim.tbl_deep_extend("force", M.config, args)
 end
 
 local query_regex = [[^\s*/\/\s*\^?]]
 
-local virtual_types_ns = vim.api.nvim_create_namespace('virtual_types')
+local virtual_types_ns = vim.api.nvim_create_namespace("virtual_types")
 local get_buffer_number = function()
 	return vim.api.nvim_get_current_buf()
 end
 
 local get_whitespaces_string = function(whitespaces)
-	local str = ''
+	local str = ""
 	local i = 0
 	while i < whitespaces do
-		str = str .. ' '
+		str = str .. " "
 		i = i + 1
 	end
 	return str
@@ -69,8 +69,8 @@ local format_virtual_text = function(text)
 		local selected_lines = vim.list_slice(converted, limits[1], limits[2])
 		return selected_lines
 	end
-	local joined_string = table.concat(converted, '', limits[1], limits[2])
-	local escaped = string.gsub(joined_string, '  ', ' ')
+	local joined_string = table.concat(converted, "", limits[1], limits[2])
+	local escaped = string.gsub(joined_string, "  ", " ")
 	return string.sub(escaped, 1, 120)
 end
 
@@ -81,7 +81,7 @@ local get_hover_text = function(client, buffer_nr, line, column)
 	end
 	local params = { textDocument = vim.lsp.util.make_text_document_params(buffer_nr), position = position }
 	if client then
-		client.request('textDocument/hover', params, function(_, result)
+		client.request("textDocument/hover", params, function(_, result)
 			if result and result.contents then
 				local formatted_text = format_virtual_text(result.contents.value or result.contents)
 				add_virtual_text(buffer_nr, position, formatted_text)
@@ -122,7 +122,7 @@ local get_types = function(client, buffer_nr)
 		local match = regex:match_str(line)
 
 		if match then
-			local column = string.find(lines[index], '%^')
+			local column = string.find(lines[index], "%^")
 			get_hover_text(client, buffer_nr, index, column)
 		end
 	end
@@ -138,16 +138,16 @@ M.enable = function()
 	vim.cmd([[doautocmd User EnableTwoslashQueries]])
 end
 
-local activate_types_augroup = vim.api.nvim_create_augroup('activateTypes', { clear = true })
+local activate_types_augroup = vim.api.nvim_create_augroup("activateTypes", { clear = true })
 
 M.attach = function(client, buffer_nr)
 	get_types(client, buffer_nr or 0)
 
 	vim.api.nvim_create_autocmd({
-		'BufWinEnter',
-		'TabEnter',
-		'InsertLeave',
-		'TextChanged',
+		"BufWinEnter",
+		"TabEnter",
+		"InsertLeave",
+		"TextChanged",
 	}, {
 		buffer = buffer_nr,
 		group = activate_types_augroup,
@@ -158,8 +158,8 @@ M.attach = function(client, buffer_nr)
 		end,
 	})
 
-	vim.api.nvim_create_autocmd('User', {
-		pattern = 'EnableTwoslashQueries',
+	vim.api.nvim_create_autocmd("User", {
+		pattern = "EnableTwoslashQueries",
 		group = activate_types_augroup,
 		callback = function()
 			if client and client.server_capabilities.hoverProvider then
