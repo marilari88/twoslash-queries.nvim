@@ -29,9 +29,9 @@ require("lspconfig")["tsserver"].setup({
 })
 ```
 
-Optionally you can define a custom keymap for InspectTwoslashQueries command
+Optionally you can define a custom keymap for TwoslashQueriesInspect command
 ```lua
-vim.api.nvim_set_keymap('n',"<C-k>","<cmd>InspectTwoslashQueries<CR>",{})
+vim.api.nvim_set_keymap('n',"<C-k>","<cmd>TwoslashQueriesInspect<CR>",{})
 ```
 ## Config
 You can override default config use setup function:
@@ -41,7 +41,7 @@ use({
     config = function()
         require("twoslash-queries").setup({
             multi_line = true, -- to print types in multi line mode
-            is_enabled = false, -- to keep disabled at startup and enable it on request with the EnableTwoslashQueries 
+            is_enabled = false, -- to keep disabled at startup and enable it on request with the TwoslashQueriesEnable 
             highlight = "Type", -- to set up a highlight group for the virtual text
 	   })
     end,
@@ -59,15 +59,15 @@ const variableToInspect = ....
 ```
 
 ### Custom commands
-`:EnableTwoslashQueries` Enable the plugin for the current session
+`:TwoslashQueriesEnable` Enable the plugin for the current session
 
-`:DisableTwoslashQueries` Disable the plugin for the current session
+`:TwoslashQueriesDisable` Disable the plugin for the current session
 
-`:InspectTwoslashQueries` Inspect variable under the cursor
+`:TwoslashQueriesInspect` Inspect variable under the cursor
 
-`:RemoveTwoslashQueries` Remove all twoslash queries in the current buffer
+`:TwoslashQueriesRemove` Remove all twoslash queries in the current buffer
 
-![Commands](https://user-images.githubusercontent.com/32909388/204667598-5faa0b88-55af-4841-941d-6db79cfff013.gif)
+![Commands](https://github.com/undg/twoslash-queries.nvim/assets/32909388/55743a48-2250-4ca2-930d-ca0a310286e6)
 
 
 ## :gift: Contributing
