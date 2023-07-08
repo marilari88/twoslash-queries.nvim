@@ -67,7 +67,7 @@ const variableToInspect = ....
 
 `:TwoslashQueriesRemove` Remove all twoslash queries in the current buffer
 
-![Commands](https://user-images.githubusercontent.com/32909388/204667598-5faa0b88-55af-4841-941d-6db79cfff013.gif)
+![Commands](https://github.com/undg/twoslash-queries.nvim/assets/32909388/55743a48-2250-4ca2-930d-ca0a310286e6)
 
 
 ## :gift: Contributing
