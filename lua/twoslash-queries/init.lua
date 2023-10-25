@@ -1,4 +1,4 @@
-M = {}
+local M = {}
 
 M.config = {
 	is_enabled = true,
