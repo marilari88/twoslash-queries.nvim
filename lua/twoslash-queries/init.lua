@@ -91,67 +91,122 @@ M.remove_queries = function()
 end
 
 ---@alias line integer
----@type Map<bufnr, Map<line, {column:integer, text:integer, extmark:integer}>>
+---@alias cache_item {column:integer,text:string,extmark:integer,clear:boolean,target:string}
+---@type Map<bufnr, Map<line, cache_item>>
 local cache = {}
 
 local clear_cache = function(buffer_nr)
   if cache[buffer_nr] then
     for _, line in pairs(cache[buffer_nr]) do
-      if line.extmark then
-        vim.api.nvim_buf_del_extmark(buffer_nr, virtual_types_ns, line.extmark)
-      end
+      line.clear = true
     end
-    cache[buffer_nr] = nil
   end
 end
 
-local update_hover_text = function(client, buffer_nr, line, column)
+local update_hover_text = function(client, buffer_nr, line, column, cb)
+  local target = vim.api.nvim_buf_get_lines(buffer_nr, line, line + 1, false)[1]
   local position = { line = line - 2, character = column }
   if not vim.api.nvim_buf_is_valid(buffer_nr) then
+    cb()
     return
   end
   local params = { textDocument = vim.lsp.util.make_text_document_params(buffer_nr), position = position }
-  if client then
-    client.request("textDocument/hover", params, function(_, result)
-      if result and result.contents then
-        -- if the text is cached already, don't update it
-        if
-          cache[buffer_nr]
-          and cache[buffer_nr][line]
-          and cache[buffer_nr][line].column == column
-          and cache[buffer_nr][line].text == result.contents
-        then
-          return
-        end
-        if cache[buffer_nr] and cache[buffer_nr][line] and cache[buffer_nr][line].extmark then
-          vim.api.nvim_buf_del_extmark(buffer_nr, virtual_types_ns, cache[buffer_nr][line].extmark)
-        end
-        local formatted_text = format_virtual_text(result.contents.value or result.contents)
-        local extmark = set_virtual_text(buffer_nr, position, formatted_text)
-        cache[buffer_nr] = cache[buffer_nr] or {}
-        cache[buffer_nr][line] = { column = column, text = formatted_text, extmark = extmark }
+  if not client then
+    cb()
+    return
+  end
+  client.request("textDocument/hover", params, function(_, result)
+    if result and result.contents then
+      -- if the text is cached already, don't update it
+      if
+        cache[buffer_nr]
+        and cache[buffer_nr][line]
+        and cache[buffer_nr][line].column == column
+        and cache[buffer_nr][line].text == result.contents
+      then
+        cache[buffer_nr][line].clear = false
+        cb()
+        return
       end
-    end)
+      if cache[buffer_nr] and cache[buffer_nr][line] and cache[buffer_nr][line].extmark then
+        vim.api.nvim_buf_del_extmark(buffer_nr, virtual_types_ns, cache[buffer_nr][line].extmark)
+        cache[buffer_nr][line] = nil
+      end
+      local formatted_text = format_virtual_text(result.contents.value or result.contents)
+      local extmark = set_virtual_text(buffer_nr, position, formatted_text)
+      cache[buffer_nr] = cache[buffer_nr] or {}
+      cache[buffer_nr][line] = {
+        column = column,
+        text = formatted_text,
+        extmark = extmark,
+        clear = false,
+        target = target,
+      }
+    end
+    cb()
+  end)
+end
+
+local _clear_cache = function(buffer_nr)
+  for line, data in pairs(cache[buffer_nr] or {}) do
+    if data.clear then
+      vim.api.nvim_buf_del_extmark(buffer_nr, virtual_types_ns, data.extmark)
+      cache[buffer_nr][line] = nil
+    end
   end
 end
 
 local update_types = function(client, buffer_nr)
-  if not client.server_capabilities.hoverProvider then
+  if not client.server_capabilities.hoverProvider or M.config.is_enabled == false then
     return
   end
-  -- vim.api.nvim_buf_clear_namespace(buffer_nr, virtual_types_ns, 0, -1)
 
-  if M.config.is_enabled == false then
-    return
+  -- update cache in case extmark positions have changed
+  local extmarks = vim.api.nvim_buf_get_extmarks(buffer_nr, virtual_types_ns, 0, -1, {})
+  for _, extmark in ipairs(extmarks) do
+    local extmark_id = extmark[1]
+    local row = extmark[2]
+    local line = row + 1
+    for cache_line, cache_item in pairs(cache[buffer_nr] or {}) do
+      if cache_item.extmark == extmark_id then
+        if cache_line ~= line then
+          local target = vim.api.nvim_buf_get_lines(buffer_nr, line, line + 1, false)[1]
+          if cache_item.target ~= target then
+            cache[buffer_nr][cache_line] = nil
+            vim.api.nvim_buf_del_extmark(buffer_nr, virtual_types_ns, extmark_id)
+          end
+        end
+        break
+      end
+    end
   end
 
   local lines = vim.api.nvim_buf_get_lines(buffer_nr, 0, -1, false)
+  local matches = {}
   for index, line in pairs(lines) do
     local match = query_regex:match_str(line)
-
     if match then
       local column = string.find(lines[index], "%^")
-      update_hover_text(client, buffer_nr, index, column)
+      if column then
+        table.insert(matches, { index, column })
+      end
+    end
+  end
+
+  local finished = 0
+  local cb = function()
+    finished = finished + 1
+    if finished == #matches then
+      _clear_cache(buffer_nr)
+    end
+  end
+  if #matches == 0 then
+    _clear_cache(buffer_nr)
+  else
+    for _, match in ipairs(matches) do
+      local index = match[1]
+      local column = match[2]
+      update_hover_text(client, buffer_nr, index, column, cb)
     end
   end
 end
@@ -209,6 +264,16 @@ M.attach = function(client, buffer_nr)
         clear_cache(buffer_nr)
       end
       update_types_for_client(client.id)
+    end,
+  })
+
+  vim.api.nvim_create_autocmd({
+    "TextChangedI",
+  }, {
+    buffer = buffer_nr,
+    group = activate_types_augroup,
+    callback = function()
+      clear_cache(buffer_nr)
     end,
   })
 
