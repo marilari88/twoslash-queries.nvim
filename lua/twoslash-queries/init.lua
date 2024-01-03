@@ -115,36 +115,58 @@ local update_hover_text = function(client, buffer_nr, line, column, cb)
     cb()
     return
   end
-  client.request("textDocument/hover", params, function(_, result)
-    if result and result.contents then
-      -- if the text is cached already, don't update it
-      if
-        cache[buffer_nr]
-        and cache[buffer_nr][line]
-        and cache[buffer_nr][line].column == column
-        and cache[buffer_nr][line].text == result.contents
-      then
-        cache[buffer_nr][line].clear = false
-        cb()
-        return
-      end
-      if cache[buffer_nr] and cache[buffer_nr][line] and cache[buffer_nr][line].extmark then
-        vim.api.nvim_buf_del_extmark(buffer_nr, virtual_types_ns, cache[buffer_nr][line].extmark)
-        cache[buffer_nr][line] = nil
-      end
-      local formatted_text = format_virtual_text(result.contents.value or result.contents)
-      local extmark = set_virtual_text(buffer_nr, position, formatted_text)
-      cache[buffer_nr] = cache[buffer_nr] or {}
-      cache[buffer_nr][line] = {
-        column = column,
-        text = formatted_text,
-        extmark = extmark,
-        clear = false,
-        target = target,
-      }
+  local finished = false
+  local clear = function()
+    if cache[buffer_nr] and cache[buffer_nr][line] and cache[buffer_nr][line].extmark ~= nil then
+      vim.api.nvim_buf_del_extmark(buffer_nr, virtual_types_ns, cache[buffer_nr][line].extmark)
+      cache[buffer_nr][line] = nil
+    end
+  end
+  local _cb = function(success)
+    finished = true
+    if not success then
+      clear()
     end
     cb()
+  end
+  local ok = client.request("textDocument/hover", params, function(_, result)
+    if not result or not result.contents then
+      _cb(false)
+      return
+    end
+    -- if the text is cached already, don't update it
+    if
+      cache[buffer_nr]
+      and cache[buffer_nr][line]
+      and cache[buffer_nr][line].column == column
+      and cache[buffer_nr][line].text == result.contents
+    then
+      cache[buffer_nr][line].clear = false
+      _cb(true)
+      return
+    end
+    clear()
+    local formatted_text = format_virtual_text(result.contents.value or result.contents)
+    local extmark = set_virtual_text(buffer_nr, position, formatted_text)
+    cache[buffer_nr] = cache[buffer_nr] or {}
+    cache[buffer_nr][line] = {
+      column = column,
+      text = formatted_text,
+      extmark = extmark,
+      clear = false,
+      target = target,
+    }
+    _cb(true)
   end)
+  if not ok then
+    _cb(false)
+    return
+  end
+  vim.defer_fn(function()
+    if not finished then
+      clear()
+    end
+  end, 100)
 end
 
 local _clear_cache = function(buffer_nr)
