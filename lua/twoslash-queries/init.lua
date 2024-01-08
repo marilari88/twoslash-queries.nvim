@@ -166,7 +166,7 @@ local update_hover_text = function(client, buffer_nr, line, column, cb)
     if not finished then
       clear()
     end
-  end, 100)
+  end, 250)
 end
 
 local _clear_cache = function(buffer_nr)
