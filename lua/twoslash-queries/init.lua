@@ -179,7 +179,11 @@ local _clear_cache = function(buffer_nr)
 end
 
 local update_types = function(client, buffer_nr)
-  if not client.server_capabilities.hoverProvider or M.config.is_enabled == false then
+  if
+    not client.server_capabilities.hoverProvider
+    or M.config.is_enabled == false
+    or not vim.api.nvim_buf_is_valid(buffer_nr)
+  then
     return
   end
 
