@@ -277,6 +277,11 @@ M.attach = function(client, buffer_nr)
   clear_cache(buffer_nr)
   update_types_for_client(client.id)
 
+  vim.api.nvim_clear_autocmds({
+    buffer = buffer_nr,
+    group = activate_types_augroup,
+  })
+
   vim.api.nvim_create_autocmd({
     "BufWinEnter",
     "TabEnter",
