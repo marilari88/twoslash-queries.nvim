@@ -74,6 +74,28 @@ local format_virtual_text = function(text)
   return string.sub(escaped, 1, 120)
 end
 
+local get_indent = function(line_num)
+  local indentexpr = vim.bo.indentexpr
+  if indentexpr ~= "" then
+    vim.v.lnum = line_num
+    local expr_indent_tbl = vim.api.nvim_exec2("echo " .. indentexpr, { output = true })
+    local expr_indent_str = expr_indent_tbl.output
+    local expr_indent = tonumber(expr_indent_str)
+    return expr_indent
+  end
+  local prev_nonblank = vim.fn.prevnonblank(line_num - 1)
+  local prev_nonblank_indent = vim.fn.indent(prev_nonblank)
+  return prev_nonblank_indent
+end
+
+M.add_query = function(pos)
+  local line, col = unpack(pos)
+  local indent = math.max(get_indent(line), get_indent(line + 1))
+  local two_slash_string = string.rep(" ", indent) .. "//"
+  two_slash_string = two_slash_string .. string.rep(" ", col - #two_slash_string) .. "^?"
+  vim.api.nvim_buf_set_lines(0, line, line, false, { two_slash_string })
+end
+
 M.remove_queries = function()
   vim.api.nvim_buf_clear_namespace(0, virtual_types_ns, 0, -1)
 

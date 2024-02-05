@@ -9,20 +9,7 @@ vim.api.nvim_create_user_command("TwoslashQueriesDisable", function()
 end, { nargs = 0, desc = "Disable two slash queries" })
 
 vim.api.nvim_create_user_command("TwoslashQueriesInspect", function()
-  -- get cursor position
-  local r, c = unpack(vim.api.nvim_win_get_cursor(0))
-
-  -- create a string line //
-  local two_slash_string = "//"
-  local i = 2
-  while i < c do
-    two_slash_string = two_slash_string .. " "
-    i = i + 1
-  end
-  two_slash_string = two_slash_string .. "^?"
-
-  -- write string line
-  vim.api.nvim_buf_set_lines(0, r, r, false, { two_slash_string })
+  require("twoslash-queries").add_query(vim.api.nvim_win_get_cursor(0))
 end, { nargs = 0, desc = "Inspect variable under the cursor" })
 
 vim.api.nvim_create_user_command("TwoslashQueriesRemove", function()
