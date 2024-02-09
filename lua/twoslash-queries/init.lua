@@ -211,9 +211,10 @@ local update_hover_text = function(client, buffer_nr, line, column, callback)
   -- When hovering over locations where there is no hover information,
   -- tsserver seems to not respond to the hover request at all.
   -- This means that the callback is not called, and the extmark is never cleared.
-  -- As a workaround, we set a timeout to clear the extmark if the callback
-  -- is not called within a certain time.
-  -- If the response comes later, the extmark will be set at that time.
+  -- As a workaround, clear the extmark after a timeout if the callback
+  -- has not been called yet.
+  -- If the response comes later, the callback will still be called, and the extmark
+  -- will be created as expected.
   vim.defer_fn(function()
     if not finished then
       clear_extmark()
