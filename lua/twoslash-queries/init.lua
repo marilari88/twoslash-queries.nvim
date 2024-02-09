@@ -128,12 +128,7 @@ end
 local update_hover_text = function(client, buffer_nr, line, column, cb)
   local target = vim.api.nvim_buf_get_lines(buffer_nr, line, line + 1, false)[1]
   local position = { line = line - 2, character = column - 1 }
-  if not vim.api.nvim_buf_is_valid(buffer_nr) then
-    cb()
-    return
-  end
-  local params = { textDocument = vim.lsp.util.make_text_document_params(buffer_nr), position = position }
-  if not client then
+  if not client or not vim.api.nvim_buf_is_valid(buffer_nr) then
     cb()
     return
   end
@@ -151,6 +146,7 @@ local update_hover_text = function(client, buffer_nr, line, column, cb)
     end
     cb()
   end
+  local params = { textDocument = vim.lsp.util.make_text_document_params(buffer_nr), position = position }
   local ok = client.request("textDocument/hover", params, function(_, result)
     if not result or not result.contents then
       _cb(false)
