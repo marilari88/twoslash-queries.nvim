@@ -32,7 +32,7 @@ local buf_expire_all_extmarks = function(buffer_nr)
   end
 end
 
----Clear cached extmarks that are marked as expired
+---Clear any cached extmarks that are marked as expired
 ---@param buffer_nr buffer_nr
 local buf_clear_expired_extmarks = function(buffer_nr)
   for line_nr, cache_item in pairs(extmark_cache[buffer_nr] or {}) do
@@ -43,7 +43,7 @@ local buf_clear_expired_extmarks = function(buffer_nr)
   end
 end
 
----Clear any cached extmarks for a buffer where the line's text has changed since the extmark was created
+---Clear any cached extmarks where the target line's text has changed since the extmark was created
 ---@param buffer_nr buffer_nr
 local buf_clear_stale_extmarks = function(buffer_nr)
   for cache_line_nr, cache_item in pairs(extmark_cache[buffer_nr] or {}) do
