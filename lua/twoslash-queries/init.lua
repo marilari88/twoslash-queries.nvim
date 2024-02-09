@@ -141,7 +141,7 @@ local get_indent = function(line_num)
   return prev_nonblank_indent
 end
 
-local update_hover_text = function(client, buffer_nr, line, column, callback)
+local update_extmark = function(client, buffer_nr, line, column, callback)
   local target_line_text = vim.api.nvim_buf_get_lines(buffer_nr, line, line + 1, false)[1]
   local position = { line = line - 2, character = column - 1 }
   if not client or not vim.api.nvim_buf_is_valid(buffer_nr) then
@@ -237,7 +237,7 @@ local buf_get_queries = function(buffer_nr)
   return matches
 end
 
-local update_types = function(client, buffer_nr)
+local buf_update_extmarks = function(client, buffer_nr)
   if
     not client.server_capabilities.hoverProvider
     or M.config.is_enabled == false
@@ -257,7 +257,7 @@ local update_types = function(client, buffer_nr)
   local finished = 0
   for _, match in ipairs(matches) do
     local index, column = unpack(match)
-    update_hover_text(client, buffer_nr, index, column, function()
+    update_extmark(client, buffer_nr, index, column, function()
       finished = finished + 1
       if finished == #matches then
         buf_clear_expired_extmarks(buffer_nr)
@@ -267,13 +267,13 @@ local update_types = function(client, buffer_nr)
 end
 
 ---@param client_id client_id
-local update_types_for_client = function(client_id)
+local client_update_extmarks = function(client_id)
   local cur = clients[client_id]
   if not cur then
     return
   end
   for _, buffer_nr in ipairs(cur.buffers) do
-    update_types(cur.client, buffer_nr)
+    buf_update_extmarks(cur.client, buffer_nr)
   end
 end
 
@@ -302,7 +302,7 @@ M.attach = function(client, buffer_nr)
   table.insert(clients[client.id].buffers, buffer_nr)
 
   buf_expire_all_extmarks(buffer_nr)
-  update_types_for_client(client.id)
+  client_update_extmarks(client.id)
 
   vim.api.nvim_clear_autocmds({
     buffer = buffer_nr,
@@ -321,7 +321,7 @@ M.attach = function(client, buffer_nr)
       if ev.event == "TextChanged" then
         buf_expire_all_extmarks(buffer_nr)
       end
-      update_types_for_client(client.id)
+      client_update_extmarks(client.id)
     end,
   })
 
@@ -340,7 +340,7 @@ M.attach = function(client, buffer_nr)
     group = activate_types_augroup,
     callback = function()
       buf_expire_all_extmarks(buffer_nr)
-      update_types_for_client(client.id)
+      client_update_extmarks(client.id)
     end,
   })
 end
