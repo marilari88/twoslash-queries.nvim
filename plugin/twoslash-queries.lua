@@ -1,4 +1,4 @@
-vim.api.nvim_set_hl(0, "TypeVirtualText", { fg = "#CCCC00" })
+vim.api.nvim_set_hl(0, "TypeVirtualText", { fg = "#CCCC00", default = true })
 
 vim.api.nvim_create_user_command("TwoslashQueriesEnable", function()
   require("twoslash-queries").enable()
