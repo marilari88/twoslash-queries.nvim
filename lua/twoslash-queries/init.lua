@@ -49,7 +49,7 @@ local buf_clear_stale_extmarks = function(buffer_nr)
   for cache_line_nr, cache_item in pairs(extmark_cache[buffer_nr] or {}) do
     local extmark_id = cache_item.extmark_id
     local extmark = vim.api.nvim_buf_get_extmark_by_id(buffer_nr, virtual_types_ns, extmark_id, {})
-    if not extmark then
+    if not extmark or #extmark == 0 then
       extmark_cache[buffer_nr][cache_line_nr] = nil
       return
     end
