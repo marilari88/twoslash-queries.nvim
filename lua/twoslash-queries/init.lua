@@ -171,7 +171,7 @@ local update_extmark = function(client, buffer_nr, line, column, callback)
   end
 
   local params = { textDocument = vim.lsp.util.make_text_document_params(buffer_nr), position = position }
-  local ok = client.request("textDocument/hover", params, function(_, result)
+  local ok = client:request("textDocument/hover", params, function(_, result)
     if not result or not result.contents then
       callback_wrapper(false)
       return
